@@ -6,19 +6,18 @@ from Asset import Asset
 from Factory import Factory
 from Agent import Agent
 from utils.Point2D import Point2D
-from GaCode import GaCode
 
 
 class Environment:
     DELTA_TIME = 0.1 # in hours, should divide 24
-    PERIOD = 31  # in days
+    PERIOD = 300  # in days
 
     def __init__(self):
         self.logger = logging.getLogger("environment")
         self.logger.setLevel(logging.DEBUG)
         self.time = 0
         self.total_cost = 0
-        self.total_jorney = []
+        self.total_journey = []
 
         self.factories = [
             Factory(self, Point2D(1, 1), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
@@ -26,17 +25,16 @@ class Environment:
             Factory(self, Point2D(3, 2), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
             Factory(self, Point2D(3, 3), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
         ]
-        self.depot = Asset(self, Point2D(0, 0))
+        self.depot = Asset(self, Point2D(0, 0), "depot")
         self.agent = Agent(self, 1, 8, 10, 1, 2)
-        self.ga_code = GaCode(self)
 
     def step(self):
         """
         simulating the next DELTA_TIME
         returns: failure
         """
-        self.time += self.DELTA_TIME
-        factory_cost = 0
+        self.time += self.DELTA_TIME                    # plus one unit time
+        factory_cost = 0                                # the Factory cost in per unit time
         for factory in self.factories:
             factory_cost += factory.step()
 
@@ -51,13 +49,13 @@ class Environment:
     def get_failure_factories_information(self):
         """
         get current failure factories' information
-        :return: matrix of (n * 3) [
+        :return: matrix of ( 1 * n ) 
         """
         failure_factories = []
         for factory in self.factories:
-            if factory.state == 2:
+            if factory.state == factory.State.DOWN:
                 failure_factories.append(factory)
-            elif factory.state == 3:
+            elif factory.state == factory.State.MAINTAIN:
                 failure_factories.append(factory)
         return failure_factories
 
@@ -81,4 +79,6 @@ if __name__ == '__main__':
         if error:
             break
     print('The total journey is:')
-    print(env.total_jorney)
+    for place in env.total_journey:
+        print(place)
+        print('->')

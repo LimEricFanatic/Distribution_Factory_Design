@@ -23,8 +23,8 @@ class Factory(Asset):
     def __init__(self, env, position,  A, LAMBDA, K, failure_cost,
                  downtime_duration, downtime_duration_cost, maintenance_cost,
                  repair_duration):
-        super().__init__(env, position)
-        self.name = f"{__name__}{self.get_factory_cnt()}"
+        self.name = f"{__name__}{self.get_factory_cnt()}"       
+        super().__init__(env, position, self.name)
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(logging.DEBUG)
 
@@ -67,10 +67,10 @@ class Factory(Asset):
             cost += self.maintenance_cost * self.env.DELTA_TIME
 
         elif self.state == Factory.State.REPAIR:
-            if self.time >= self.state_transition_time:
+            if self.env.time >= self.state_transition_time:
                 self.logger.debug(f'{self.env.time}: {repr(self)} repaired')
-                self.failure_cdf = lambda t: self.A * self.failure_cdf(t - time)
-                self.repair_time_array.append(time)
+                self.failure_cdf = lambda t: self.A * self.failure_cdf(t - self.env.time)
+                self.repair_time_array.append(self.env.time)
                 self.state = Factory.State.GOOD
 
         return cost
