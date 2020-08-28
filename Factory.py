@@ -6,6 +6,7 @@ from enum import Enum
 from utils import Point2D
 from Asset import Asset
 
+
 class Factory(Asset):
     class State(Enum):
         GOOD = 1
@@ -19,8 +20,8 @@ class Factory(Asset):
         cls.factory_cnt += 1
         return cls.factory_cnt - 1
 
-    def __init__(self, env, position, A, LAMBDA, K, failure_cost,
-                 downtime_duration, downtime_duration_cost, maintainance_cost,
+    def __init__(self, env, position,  A, LAMBDA, K, failure_cost,
+                 downtime_duration, downtime_duration_cost, maintenance_cost,
                  repair_duration):
         super().__init__(env, position)
         self.name = f"{__name__}{self.get_factory_cnt()}"
@@ -32,11 +33,10 @@ class Factory(Asset):
         self.A = A
         self.LAMBDA = LAMBDA
         self.K = K
-        self.maintainance_cost = maintainance_cost
-        self.failure_cost = failure_cost
-        self.downtime_duration = downtime_duration
-        self.downtime_duration_cost = downtime_duration_cost
-        self.maintainance_cost = maintainance_cost
+        self.failure_cost = failure_cost       # once end
+        self.downtime_duration = downtime_duration     # upper limit of downtime
+        self.downtime_duration_cost = downtime_duration_cost   # per unit time
+        self.maintenance_cost = maintenance_cost    # per unit time
         self.repair_duration = repair_duration
 
         self.state = Factory.State.GOOD
@@ -60,11 +60,11 @@ class Factory(Asset):
         elif self.state == Factory.State.DOWN:
             cost += self.downtime_duration_cost * self.env.DELTA_TIME
             if self.env.time >= self.state_transition_time:
-                self.logger.debug(f'{self.env.time}: {repr(self)} maintainance starts')
+                self.logger.debug(f'{self.env.time}: {repr(self)} maintenance starts')
                 self.state = Factory.State.MAINTAIN
 
         elif self.state == Factory.State.MAINTAIN:
-            cost += self.maintainance_cost * self.env.DELTA_TIME
+            cost += self.maintenance_cost * self.env.DELTA_TIME
 
         elif self.state == Factory.State.REPAIR:
             if self.time >= self.state_transition_time:
