@@ -20,10 +20,10 @@ class Environment:
         self.total_journey = []
 
         self.factories = [
-            Factory(self, Point2D(1, 1), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
-            Factory(self, Point2D(3, 1), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
-            Factory(self, Point2D(3, 2), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
-            Factory(self, Point2D(3, 3), 1.04, 2497, 2.86, 200, 1, 3, 2, 1),
+            Factory(self, Point2D(1, 1), "Factory0", 2, 2497, 2.86, 200, 1, 3, 2, 1),
+            Factory(self, Point2D(3, 1), "Factory1", 2, 2497, 2.86, 200, 1, 3, 2, 1),
+            Factory(self, Point2D(3, 2), "Factory2", 2, 2497, 2.86, 200, 1, 3, 2, 1),
+            Factory(self, Point2D(3, 3), "Factory3", 2, 2497, 2.86, 200, 1, 3, 2, 1),
         ]
         self.depot = Asset(self, Point2D(0, 0), "depot")
         self.agent = Agent(self, 1, 8, 10, 1, 2)

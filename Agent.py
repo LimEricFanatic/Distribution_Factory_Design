@@ -92,7 +92,6 @@ class Agent:
         current_failure_number = 0
 
         current_failure_number = len(self.env.get_failure_factories_information())
-        print(current_failure_number)
         if current_failure_number:
             """===============================实例化问题对象============================"""
             problem = GaCode(self.env)  # 生成问题对象
@@ -103,10 +102,9 @@ class Agent:
             population = ea.Population(Encoding, Field, NIND)  # 实例化种群对象（此时种群还没被初始化，仅仅是完成种群对象的实例化）
             """===============================算法参数设置============================="""
             myAlgorithm = ea.soea_studGA_templet(problem, population)  # 实例化一个算法模板对象
-            myAlgorithm.MAXGEN = 1000  # 最大进化代数
+            myAlgorithm.MAXGEN = 100  # 最大进化代数
             myAlgorithm.drawing = 0  # 设置绘图方式（0：不绘图；1：绘制结果图；2：绘制目标空间过程动画；3：绘制决策空间过程动画）
             """==========================调用算法模板进行种群进化======================="""
-  #          try:
             [population, obj_trace, var_trace] = myAlgorithm.run()  # 执行算法模板，得到最后一代种群以及进化记录器
             population.save()  # 把最后一代种群的信息保存到文件中
             # 输出结果
@@ -114,18 +112,22 @@ class Agent:
             best_ObjV = np.min(obj_trace[:, 1])
             failure_factories = self.env.get_failure_factories_information()
             failure_factories = np.array(failure_factories)
-            best_journey = failure_factories[var_trace[best_gen]]
+            best_gen_matrix = var_trace[best_gen].astype(int)
+            best_journey = failure_factories[best_gen_matrix]
             best_predict_total_cost = best_ObjV
-            if len(best_ObjV) == 0:
+            if np.size(best_ObjV) == 0:
                 best_ObjV = [self.env.depot]
-            print('最少花费为：%s' % best_predict_total_cost)
-            print('最佳路线为：')
-#          except IndexError:
-            best_journey = [self.env.depot]
-#          else:
-            print("current journey has been calculated!")
-            for i in range(len(best_journey)):
-                print(best_journey[i].name, end=' ')
+            print("current journey has been calculated!") 
+
+            # screen show
+            print("Agent's Position:")
+            print(self.position)
+            print("Current failure number:")
+            print(current_failure_number)
+            print("best journey is:")
+            for factory in best_journey:
+                print(factory.name)
+            print('Minimum Cost：%s' % best_predict_total_cost)
 
             if best_journey[0].name == "Factory0":
                 return self.env.factories[0]
@@ -139,5 +141,15 @@ class Agent:
                 return self.env.factories[4]
             else:
                 return self.env.depot
-        else: return self.env.depot
+        else: 
+            # Screen Show
+            print("Agent's Position:")
+            print(self.position)
+            print("Current failure number:")
+            print(current_failure_number)
+            print("best journey is: depot")
+            print('Minimum Cost：%s' % best_predict_total_cost)
+
+            return self.env.depot
+
 

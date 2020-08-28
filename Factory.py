@@ -20,15 +20,17 @@ class Factory(Asset):
         cls.factory_cnt += 1
         return cls.factory_cnt - 1
 
-    def __init__(self, env, position,  A, LAMBDA, K, failure_cost,
+    def __init__(self, env, position, name,  A, LAMBDA, K, failure_cost,
                  downtime_duration, downtime_duration_cost, maintenance_cost,
                  repair_duration):
-        self.name = f"{__name__}{self.get_factory_cnt()}"       
+ #       self.name = f"{__name__}{self.get_factory_cnt()}"       
+        self.name = name        
         super().__init__(env, position, self.name)
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(logging.DEBUG)
 
         random.seed()
+
 
         self.A = A
         self.LAMBDA = LAMBDA

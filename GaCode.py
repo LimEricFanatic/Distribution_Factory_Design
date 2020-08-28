@@ -19,10 +19,12 @@ class GaCode(ea.Problem):
     def aimFunc(self, pop):
         decision_matrix = pop.Phen.copy()
         ObjV = []
-        for i in range(pop.size):
+        for i in range(pop.sizes):
             viable_flag = [1]
-            failure_factories = self.env.get_failure_factories_information()
-            journey = failure_factories[decision_matrix[i]]
+            failure_factories = np.array(self.env.get_failure_factories_information())
+            decision_matrix = decision_matrix.astype(int)
+            now_decision_line = decision_matrix[i,:]
+            journey = failure_factories[now_decision_line]
             predict_total_cost = self.get_predict_total_cost(journey, viable_flag)
             if viable_flag[0] == 0:
                 continue
@@ -48,7 +50,7 @@ class GaCode(ea.Problem):
         now_position = self.env.agent.position
         predict_distance = []
         for i in range(self.Dim):
-            next_target_position = predict_journey[i]
+            next_target_position = predict_journey[i].position
             target_vector = next_target_position - now_position
             target_distance = abs(target_vector)
             predict_distance.append(target_distance)
@@ -69,18 +71,18 @@ class GaCode(ea.Problem):
         for i in range(len(predict_distance)):
             now_travel_duration = predict_distance[i] / predict_velocity
             predict_travel_duration += now_travel_duration
-            if len(predict_leave_time):
+            if i == 0:
                 now_arrive_time = current_time + now_travel_duration
                 predict_arrive_time.append(now_arrive_time)
             else:
-                now_arrive_time = predict_leave_time[-1] + now_travel_duration
+                now_arrive_time = predict_leave_time[i-1] + now_travel_duration
                 predict_arrive_time.append(now_arrive_time)
             if i != (len(predict_distance) - 1):
                 now_factory = predict_journey[i]
-                next_leave_time = predict_arrive_time[-1] + now_factory.repair_duration
+                next_leave_time = predict_arrive_time[i] + now_factory.repair_duration
                 predict_leave_time.append(next_leave_time)
-            else:
-                next_leave_time = predict_arrive_time[-1]
+            else:     #arrive depot
+                next_leave_time = predict_arrive_time[i]
                 predict_leave_time.append(next_leave_time)
         predict_arrive_duration[:] = [x - current_time for x in predict_arrive_time]
         factory_temp_index = 0
@@ -109,18 +111,24 @@ class GaCode(ea.Problem):
         predict_failure_cost = 0
         predict_downtime_duration_cost = 0
         predict_maintenance_cost = 0
+        predict_overtime_cost = 0
+        predict_travel_cost = 0
+        factory_temp_index = 0
 
+        predict_overtime_cost = predict_day_overworking_duration * self.env.agent.overtime_cost
+        predict_travel_cost = predict_travel_duration * self.env.agent.travel_cost
         for factory in predict_journey:
             predict_failure_cost += factory.failure_cost
 
         for factory in predict_journey:
             predict_downtime_duration_cost += factory.downtime_duration_cost * \
                 predict_downtime_duration[factory_temp_index]
+            factory_temp_index += 1
+        factory_temp_index = 0
         for factory in predict_journey:
             predict_maintenance_cost += factory.maintenance_cost * \
                 predict_maintenance_duration[factory_temp_index]
-        predict_total_cost = current_cost + predict_failure_cost + (
-                predict_travel_duration * self.env.agent.travel_cost) + (
-                predict_day_overworking_duration * self.overtime_cost) + predict_downtime_duration_cost + (
-                predict_maintenance_cost)
+            factory_temp_index += 1
+        predict_total_cost = current_cost + predict_failure_cost + predict_travel_cost + predict_overtime_cost \
+            + predict_downtime_duration_cost + predict_maintenance_cost
         return predict_total_cost
