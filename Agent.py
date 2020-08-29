@@ -38,9 +38,9 @@ class Agent:
         cost = 0
         if self.state != Agent.AgentState.IDLE:
             self.day_working_duration += self.env.DELTA_TIME
-            if self.day_working_duration > self.max_working_duration:
-                self.logger.error('{self.env.time}: failure, working more than max hours')
-                return math.inf
+#            if self.day_working_duration > self.max_working_duration:
+#                self.logger.error('{self.env.time}: failure, working more than max hours')
+#                return math.inf                                                 #Not perfect
             if self.day_working_duration > self.std_working_duration:
                 cost += self.overtime_cost * self.env.DELTA_TIME
 
@@ -92,7 +92,7 @@ class Agent:
         current_failure_number = 0
 
         current_failure_number = len(self.env.get_failure_factories_information())
-        if current_failure_number:
+        if current_failure_number != 0:
             """===============================实例化问题对象============================"""
             problem = GaCode(self.env)  # 生成问题对象
             """=================================种群设置==============================="""
@@ -110,16 +110,21 @@ class Agent:
             # 输出结果
             best_gen = np.argmin(obj_trace[:, 1])  # 记录最优种群是在哪一代
             best_ObjV = np.min(obj_trace[:, 1])
-            failure_factories = self.env.get_failure_factories_information()
-            failure_factories = np.array(failure_factories)
-            best_gen_matrix = var_trace[best_gen].astype(int)
-            best_journey = failure_factories[best_gen_matrix]
-            best_predict_total_cost = best_ObjV
-            if np.size(best_ObjV) == 0:
-                best_ObjV = [self.env.depot]
+            if best_ObjV == 666666666:
+                best_predict_total_cost = 0
+                best_journey = [self.env.depot]           
+            else:
+                failure_factories = self.env.get_failure_factories_information()
+                failure_factories = np.array(failure_factories)
+                best_gen_matrix = var_trace[best_gen].astype(int)
+                best_journey = failure_factories[best_gen_matrix]
+                best_predict_total_cost = best_ObjV
+
             print("current journey has been calculated!") 
 
             # screen show
+            print("TIME:")
+            print(self.env.time)
             print("Agent's Position:")
             print(self.position)
             print("Current failure number:")
@@ -143,6 +148,8 @@ class Agent:
                 return self.env.depot
         else: 
             # Screen Show
+            print("TIME:")
+            print(self.env.time)
             print("Agent's Position:")
             print(self.position)
             print("Current failure number:")

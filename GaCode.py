@@ -20,19 +20,15 @@ class GaCode(ea.Problem):
         decision_matrix = pop.Phen.copy()
         ObjV = []
         for i in range(pop.sizes):
-            viable_flag = [1]
             failure_factories = np.array(self.env.get_failure_factories_information())
             decision_matrix = decision_matrix.astype(int)
-            now_decision_line = decision_matrix[i,:]
+            now_decision_line = decision_matrix[i, :]
             journey = failure_factories[now_decision_line]
-            predict_total_cost = self.get_predict_total_cost(journey, viable_flag)
-            if viable_flag[0] == 0:
-                continue
-            else:
-                ObjV.append(predict_total_cost)
+            predict_total_cost = self.get_predict_total_cost(journey)
+            ObjV.append(predict_total_cost)
         pop.ObjV = np.array([ObjV]).T
 
-    def get_predict_total_cost(self, predict_journey, viable_flag):
+    def get_predict_total_cost(self, predict_journey):
         current_cost = self.env.total_cost
         current_time = self.env.time
         current_day_working_duration = self.env.agent.day_working_duration
@@ -98,14 +94,15 @@ class GaCode(ea.Problem):
         factory_temp_index = 0
         predict_plan_duration = predict_leave_time[-1] - current_time
         predict_day_working_duration = current_day_working_duration + predict_plan_duration
-        if predict_day_working_duration > current_max_working_duration:
-            viable_flag[0] = 0
-            return None
-        elif predict_day_working_duration > current_std_working_duration:
-            predict_day_std_working_duration = current_std_working_duration
-            predict_day_overworking_duration = predict_day_working_duration - current_std_working_duration
-        else:
-            predict_day_std_working_duration = predict_day_working_duration
+ #       if predict_day_working_duration > current_max_working_duration:
+ #          print("not used")
+ #           exit()
+ #           return 666666666    # cannot finish in upper limit time
+ #       elif predict_day_working_duration > current_std_working_duration:
+ #           predict_day_std_working_duration = current_std_working_duration
+ #           predict_day_overworking_duration = predict_day_working_duration - current_std_working_duration
+ #       else:
+ #           predict_day_std_working_duration = predict_day_working_duration
 
         # cost part
         predict_failure_cost = 0
@@ -114,6 +111,9 @@ class GaCode(ea.Problem):
         predict_overtime_cost = 0
         predict_travel_cost = 0
         factory_temp_index = 0
+
+        #temp
+        predict_overtime_duration = 0
 
         predict_overtime_cost = predict_day_overworking_duration * self.env.agent.overtime_cost
         predict_travel_cost = predict_travel_duration * self.env.agent.travel_cost
@@ -131,4 +131,5 @@ class GaCode(ea.Problem):
             factory_temp_index += 1
         predict_total_cost = current_cost + predict_failure_cost + predict_travel_cost + predict_overtime_cost \
             + predict_downtime_duration_cost + predict_maintenance_cost
+            
         return predict_total_cost

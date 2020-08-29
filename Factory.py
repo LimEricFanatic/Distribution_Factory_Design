@@ -43,7 +43,7 @@ class Factory(Asset):
 
         self.state = Factory.State.GOOD
         self.state_transition_time = 0
-        self.repair_time_array = []
+        self.repair_time_array = []         # finish time records
         self.failure_cdf = lambda x: 1 - math.exp(-(x / self.LAMBDA) ** self.K)
 
     def step(self):
@@ -71,9 +71,10 @@ class Factory(Asset):
         elif self.state == Factory.State.REPAIR:
             if self.env.time >= self.state_transition_time:
                 self.logger.debug(f'{self.env.time}: {repr(self)} repaired')
-                self.failure_cdf = lambda t: self.A * self.failure_cdf(t - self.env.time)
                 self.repair_time_array.append(self.env.time)
+ #              self.failure_cdf = lambda t: self.A * self.failure_cdf(t - self.repair_time_array[-1])         
                 self.state = Factory.State.GOOD
+
 
         return cost
 
